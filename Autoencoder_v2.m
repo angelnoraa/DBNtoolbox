@@ -40,12 +40,7 @@ classdef Autoencoder_v2 < handle & Learner
             self.type = type;           
         end
                         
-        function train(self,X) %train with all data
-            self.initialization(X);
-            self.initIter(1);
-            self.update(X);            
-            self.save();
-        end
+        
         
         %for batch update-----------------------------        
         

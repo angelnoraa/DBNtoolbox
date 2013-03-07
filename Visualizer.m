@@ -139,6 +139,23 @@ classdef Visualizer
             drawnow
 
             warning on all            
+         end
+        
+         %for visualizing waveform
+         function [] = visualize1D(self, savepath, disp_col)
+            if ~exist('savepath','var')
+                savepath = './tmp';
+            end
+            clf;
+            if ~exist('disp_col','var')            
+                disp_col = round(sqrt(self.numunits));
+            end
+            disp_row = self.numunits / disp_col;
+            for i = 1 : self.numunits
+                subplot(disp_col,disp_row,i);
+                plot(self.weights(:,i));
+            end
+            saveas(gcf,[savepath '.png']);
         end
     end
 end

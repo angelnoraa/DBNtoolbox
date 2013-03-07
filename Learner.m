@@ -12,26 +12,19 @@ classdef Learner < handle
         function self = Learner()            
         end
         
-        function [] = visualize1D(self, savepath, disp_col)
-            if ~exist('savepath','var')
-                savepath = './tmp';
-            end
-            clf;
-            if ~exist('disp_col','var')            
-                disp_col = round(sqrt(self.numunits));
-            end
-            disp_row = self.numunits / disp_col;
-            for i = 1 : self.numunits
-                subplot(disp_col,disp_row,i);
-                plot(self.weights(:,i));
-            end
-            saveas(gcf,[savepath '.png']);
-        end
+
         
         function X = fprop(self, X) %in current design train need to preprocess manually because other trainer (Optimizer) might envolve
             if ~isempty(self.preprocessor)
                 X = self.preprocessor.run(self.preprocessor, X);     
             end
+        end
+        
+        function train(self,X) %train with all data
+            self.initialization(X);
+            self.initIter(1);
+            self.update(X);            
+            self.save();
         end
         
         %-----to support batch update

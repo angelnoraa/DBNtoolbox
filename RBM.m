@@ -16,21 +16,26 @@ classdef RBM < handle & Learner
         target_sparsity = 0;                		
         type;  %'bin' or 'gau'        		        
         
-        batch_size= 100;		
+        numdata;
+        
         sigma = 1;		
         epsilon = 1e-3;
         initialmomentum = 0.5;
         finalmomentum = 0.9;
         init_weight = 1e-3;
         
-        error_history;
+        recon_err_history;
         sparsity_history;        		
-		
+		epoch;
+        
         %temporary varaibles
 		Winc;
 		hbiasinc;
 		vbiasinc;
-		runningavg_prob;		
+		recon_err_epoch;
+        sparsity_epoch;
+        
+        runningavg_prob;		
     end
     
     methods
@@ -39,91 +44,68 @@ classdef RBM < handle & Learner
             self.type = type;                     
         end
         
-        function train(self, X, par)
-            if ~exist('par','var') %addtional parameters for child class
-                par = [];
+        function train(self,X) %train with all data
+            self.initialization(X);
+            for t = 1 : self.max_iter
+                self.initIter(t);
+                self.update(X);          
+                self.checkStop();
             end
-            
-            if isempty(self.save_iter)
-                self.save_iter = self.max_iter;
-            end
-            
-            %initialization
-            self.feadim = size(X,1);
+            self.save();
+        end     
+        
+        function [] = initialization(self, X)     
+            [self.feadim , self.numdata] = size(X);
             if isempty(self.weights)
                 self.weights = self.init_weight*randn(self.feadim,self.numunits);
                 self.hbias = zeros(self.numunits,1);
-                self.vbias = zeros(self.feadim,1);
-                
-                self.Winc = zeros(size(self.weights));
-                self.hbiasinc = zeros(size(self.hbias));
-                self.vbiasinc = zeros(size(self.vbias));
-                tstart = 0;
+                self.vbias = zeros(self.feadim,1);                                      
             else
-                disp('use existing weights');
-                tstart = length(self.error_history);
-                self.save_iter = self.save_iter + tstart;
+                disp('use existing weights');              
             end
-                        		                                
             
-            % train a restricted Boltzmann machine
-            runningavg_prob = [];
-                                    
-            for t= tstart+1 : tstart+self.max_iter                                
-                tic                                
-                randidx = randperm(size(X,2));
-                recon_err_epoch = [];
-                sparsity_epoch = [];                                
-				
-                for b=1:floor(size(X,2)/self.batch_size)  %//一次只做一個batch
-                    batchidx = randidx((b-1)*self.batch_size+1:min(b*self.batch_size, size(X,2))); %random choose batch
-
-                    Xb = X(:, batchidx);                   
-					                    					
-                    % TODO: compute contrastive divergence steps                     
-                    [recon_err sparsity] = self.update(Xb,t,par);
-					
-                    recon_err_epoch = [recon_err_epoch recon_err];                    
-                    sparsity_epoch = [sparsity_epoch sparsity];                          
-                end
-                
-                self.error_history = [self.error_history mean(recon_err_epoch)];
-                self.sparsity_history = [self.sparsity_history mean(sparsity_epoch)];
-               
-                elapse_time = toc;
-                
-                fprintf('||W||=%g, ', double(sqrt(sum(self.weights(:).^2))));
-                fprintf('epoch %d:\t error=%g,\t sparsity=%g\n', t, self.error_history(end), self.sparsity_history(end));
-                fprintf('elapsed time : %g\n', elapse_time);
-                
-                %save if needed
-                if nnz(self.save_iter == t) > 0
-                    self.save();
-                end
-            end
+            self.Winc = zeros(size(self.weights));
+            self.hbiasinc = zeros(size(self.hbias));
+            self.vbiasinc = zeros(size(self.vbias)); 
         end
-               
-        function [recon_err sparsity] = update(self, Xb, epoch, par)			
-			poshidprob = (self.weights'*Xb + self.hbias*ones(1,self.batch_size))/self.sigma ;  							  
+        
+        function [] = initIter(self,t)            
+            self.recon_err_epoch = [];
+            self.sparsity_epoch = []; 
+            self.epoch = t;
+        end
+        
+        function [isstop] = checkStop(self)        
+            isstop = false;
+            self.recon_err_history = [self.recon_err_history mean(self.recon_err_epoch)];
+            self.sparsity_history = [self.sparsity_history mean(self.sparsity_epoch)];       
+            
+            fprintf('||W||=%g, ', double(sqrt(sum(self.weights(:).^2))));
+            fprintf('epoch %d:\t error=%g,\t sparsity=%g\n', self.epoch, self.recon_err_history(end), self.sparsity_history(end));
+        end
+        
+        function [] = update(self, Xb)			
+			poshidprob = (self.weights'*Xb + self.hbias*ones(1,self.numdata))/self.sigma ;  							  
 			poshidprob = Utils.sigmoid(poshidprob);
-			poshidstates = poshidprob > rand(self.numunits,self.batch_size);                   
+			poshidstates = poshidprob > rand(self.numunits,self.numdata);                   
 			
 			switch self.type
 				case 'gau'                          
-					negdata = (repmat(self.vbias,[1, self.batch_size])+self.weights*poshidstates)/self.sigma;
+					negdata = (repmat(self.vbias,[1, self.numdata])+self.weights*poshidstates)/self.sigma;
 				case 'bin'            
 					negdata = Utils.sigmoid((self.weights*poshidstates) + repmat(self.vbias, 1, size(Xb,2)));                            
 				otherwise
 					error('undefined type');
 			end
 			
-			neghidprob = (self.weights'*negdata + self.hbias*ones(1,self.batch_size))/self.sigma ;                     			 
+			neghidprob = (self.weights'*negdata + self.hbias*ones(1,self.numdata))/self.sigma ;                     			 
 			neghidprob = Utils.sigmoid(neghidprob);
 			
 			% monitoring variables
 			recon_err = double(norm(Xb- negdata, 'fro')^2/size(Xb,2));			
-			
+			self.recon_err_epoch = [self.recon_err_epoch recon_err];
 			sparsity = double(mean(mean(poshidprob)));
+            self.sparsity_epoch = [self.sparsity_epoch sparsity];
 			
 			% TODO: compute contrastive gradients
 			dW = Xb*poshidprob'- negdata*neghidprob';
@@ -143,12 +125,12 @@ classdef RBM < handle & Learner
 				dhbias_sparsity = 0;
 			end
 			
-			dW = dW/self.batch_size - self.l2_C*self.weights;
-			dvbias = dvbias/self.batch_size;
-			dhbias = dhbias/self.batch_size + dhbias_sparsity;
+			dW = dW/self.numdata - self.l2_C*self.weights;
+			dvbias = dvbias/self.numdata;
+			dhbias = dhbias/self.numdata + dhbias_sparsity;
 							                            
 			% update parameters						            					            
-            if epoch<5,           
+            if self.epoch<5,           
                 momentum = self.initialmomentum;
             else
                 momentum = self.finalmomentum;
@@ -165,8 +147,8 @@ classdef RBM < handle & Learner
 		end
 				
 		
-        function [acti] = fprop(self, X)            
-                acti = Utils.sigmoid((self.weights'*X + repmat(self.hbias,[1,size(X,2)])) /self.sigma); 
+        function [acti] = fprop(self, X)          
+            acti = Utils.sigmoid((self.weights'*X + repmat(self.hbias,[1,size(X,2)])) /self.sigma); 
         end                
         
         function [FE] = freeEnergy(self, X)
@@ -189,13 +171,14 @@ classdef RBM < handle & Learner
             save([savepath '.mat'],'learner');
             
             clf;
-            Utils.display_network_l1(self.weights);
+            figure(1)
+            Visualizer.display_network_l1(self.weights);
             saveas(gcf,[savepath '_1.png']);
             
             %currently only show obj, error & sparsity
-            clf;            
+            figure(2)       
             subplot(2,1,1);
-            plot(self.error_history);
+            plot(self.recon_err_history);
             subplot(2,1,2);
             plot(self.sparsity_history);
             saveas(gcf,[savepath '_2.png']);
