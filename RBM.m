@@ -54,12 +54,14 @@ classdef RBM < handle & Learner
             self.save();
         end     
         
-        function [] = initialization(self, X)     
-            [self.feadim , self.numdata] = size(X);
+        function [] = initialization(self, X, batch_size)     
+            [self.feadim] = size(X,1);
+            self.numdata = batch_size;
+            
             if isempty(self.weights)
                 self.weights = self.init_weight*randn(self.feadim,self.numunits);
                 self.hbias = zeros(self.numunits,1);
-                self.vbias = zeros(self.feadim,1);                                      
+                self.vbias = zeros(self.feadim,1);                          
             else
                 disp('use existing weights');              
             end
@@ -148,6 +150,7 @@ classdef RBM < handle & Learner
 				
 		
         function [acti] = fprop(self, X)          
+            X = fprop@Learner(self,X);
             acti = Utils.sigmoid((self.weights'*X + repmat(self.hbias,[1,size(X,2)])) /self.sigma); 
         end                
         
@@ -160,7 +163,7 @@ classdef RBM < handle & Learner
         
         function [] = save(self)
             %should add more items to learner_id in the future
-            learner_id = sprintf('RBM_nu%d_l2%g_sp%g_spl%g',self.numunits, self.l2_C, self.target_sparsity, self.lambda_sparsity);
+            learner_id = sprintf('RBM_%s_nu%d_l2%g_sp%g_spl%g',self.type,self.numunits, self.l2_C, self.target_sparsity, self.lambda_sparsity);
             savedir = fullfile(Config.basis_dir_path,self.save_dir);                       
             if ~exist(savedir,'dir')               
                 mkdir(savedir);

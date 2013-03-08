@@ -51,7 +51,7 @@ classdef Kmeans < handle & Learner
         %for batch update-----------------------------
         %TODO: init (init label first), checkend        
         
-        function [] = initialization(self, X)
+        function [] = initialization(self, X,batch_size)
             if isempty(self.weights)
                 self.feadim = size(X,1); 
                 n  = size(X,2);

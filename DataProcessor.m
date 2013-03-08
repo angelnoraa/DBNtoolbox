@@ -54,6 +54,7 @@ classdef DataProcessor < handle
                 S = std(Xtrain, [], 2)+1e-5;
             end
             Xtrain = bsxfun(@rdivide, bsxfun(@minus, Xtrain, M), S);
+            Xtest = [];
             if exist('Xtest','var') && ~isempty(Xtest)
                 Xtest = bsxfun(@rdivide, bsxfun(@minus, Xtest, M), S);
             end

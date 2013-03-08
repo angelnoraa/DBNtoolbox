@@ -28,7 +28,7 @@ classdef Learner < handle
         end
         
         %-----to support batch update
-        function [] = initialization(self, X)            
+        function [] = initialization(self, X, batch_size)            
         end
         
         function [] = initIter(self,t)            

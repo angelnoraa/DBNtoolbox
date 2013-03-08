@@ -15,8 +15,7 @@ classdef Autoencoder_v2 < handle & Learner
         target_sparsity = 0;
         lambda_sparsity = 0;
         noise = 0;                                
-        
-        batch_size = 1000;        
+                
                           
         obj_history;
         error_history;
@@ -44,8 +43,8 @@ classdef Autoencoder_v2 < handle & Learner
         
         %for batch update-----------------------------        
         
-        function [] = initialization(self, X)
-            self.setPar(size(X));              
+        function [] = initialization(self, X,batch_size)
+            self.setPar([size(X,1) batch_size]);              
         end
         
         function [] = initIter(self,t)

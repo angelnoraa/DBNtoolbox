@@ -20,7 +20,7 @@ classdef Optimizer < handle
             numdata = size(X,2); %add more choices later
             numbatch = floor(numdata / self.batch_size);
             
-            obj.initialization(X);
+            obj.initialization(X,self.batch_size);
             for t = 1 : self.max_iter
                 fprintf('iter: %d,',t);
                 obj.initIter(t);
