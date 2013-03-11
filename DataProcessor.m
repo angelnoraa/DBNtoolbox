@@ -48,18 +48,30 @@ classdef DataProcessor < handle
             end
         end
         
-        function [Xtrain, Xtest, M, S] = normalize(Xtrain, Xtest, M, S)
+        function [Xtrain, M, S] = normalize(Xtrain,M, S)
             if ~exist('M', 'var') || isempty(M)
                 M = mean(Xtrain,2);
                 S = std(Xtrain, [], 2)+1e-5;
             end
-            Xtrain = bsxfun(@rdivide, bsxfun(@minus, Xtrain, M), S);
-            Xtest = [];
-            if exist('Xtest','var') && ~isempty(Xtest)
-                Xtest = bsxfun(@rdivide, bsxfun(@minus, Xtest, M), S);
-            end
+            Xtrain = bsxfun(@rdivide, bsxfun(@minus, Xtrain, M), S);                     
         end
 	
+        function [Data, M, S] = normalizeData(Data, M, S)
+            if ~exist('M', 'var') || isempty(M)
+                M = mean(Data.Xtrain,2);
+                S = std(Data.Xtrain, [], 2)+1e-5;
+            end
+            Data.Xtrain = bsxfun(@rdivide, bsxfun(@minus, Data.Xtrain, M), S);           
+            
+            if isfield(Data,'Xval') && ~isempty(Data.Xval)
+                 Data.Xval = bsxfun(@rdivide, bsxfun(@minus, Data.Xval, M), S);
+            end
+            if isfield(Data,'Xtest') && ~isempty(Data.Xtest)
+                 Data.Xtest = bsxfun(@rdivide, bsxfun(@minus, Data.Xtest, M), S);
+            end
+            
+        end
+        
         function [X_zca M P numfactor] = ZCA_whitening(X, numfactor, reg)
              [~, M ,P ,numfactor, U] = DataProcessor.PCA_whitening(X, numfactor, reg);
              P = U(:,1:numfactor)*P;

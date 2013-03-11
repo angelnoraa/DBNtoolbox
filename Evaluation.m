@@ -87,7 +87,9 @@ classdef Evaluation < handle
 			if ~exist('metric', 'var') || isempty(metric)
 				metric = @Evaluation.accuracy;
 			end
-			
+			if ~exist('val_idx','var')
+                val_idx = [];
+            end
 			train_idx = [1:length(data.Ytrain)];
 			train_idx(val_idx) = [];
 			

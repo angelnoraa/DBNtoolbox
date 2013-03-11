@@ -1,6 +1,7 @@
 classdef SVM < handle & Classifier
 %the wrapper for many different SVM libraries
 %only linear_minFunc are updated to latest version, other types might need debug and update
+%re-write into Optimizer format?
     properties
         model;
 		par;
@@ -154,6 +155,7 @@ classdef SVM < handle & Classifier
 			end
         end                        
         
+        %-------------these might be deleted (or moved to Evaluation)-----------------
         function [accu_train, accu_test, svm] = tuning(self, C, Xtrain, Ytrain, Xtest, Ytest)
             %tuning (Xtest, Ytest are actually validation)
 	    if ~isempty(self.Data)
@@ -220,6 +222,7 @@ classdef SVM < handle & Classifier
             [~, accu_train] = self.classify(Xtrain, Ytrain);
             [~, accu_test] = self.classify(Xtest, Ytest);
         end
+        %-----------------------
         
     end
     
