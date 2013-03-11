@@ -20,8 +20,18 @@ classdef Utils
 		    end
 		    y_multi = bsxfun(@times, y_multi, [1:size(y_multi,1)]');
 		    Yout = sum(y_multi,1)';
-		end
+        end
 		
+        %----------computation------------
+        function ls = logfunc(xx,func)                            
+            % basic idea: shift before exp and reshift back
+            % x: n*1, log(func(exp(x)));
+            if(length(xx(:))==1) ls=xx; return; end
+
+            alpha = max(xx);
+            ls = alpha+log(func(exp(xx-alpha)));
+        end        
+        
 		function X = sigmoid(X)
 			X = 1./(1+exp(-X));
 		end
@@ -30,6 +40,7 @@ classdef Utils
             X = X(:);
         end
         
+        %-------------------------
         function [coeff] = pbcorr(X,Y)
             %point-biserial correlation coefficient, X is continuous (numvariables*numsamples), Y is binary
             coeff = sqrt(nnz(Y==1)*nnz(Y==0)/(length(Y)^2)) * (mean(X(:,Y==1),2) - mean(X(:,Y==0),2)) ./ std(X,[],2)
