@@ -1,4 +1,6 @@
 classdef Classifier < handle
+	%TODO: should re-write this weighting scheme!
+
 	properties		       
         class_penalty; %mis-classification penalty for each class, numclass*1
 		sample_penalty; %mis-classification penalty for each sample, numsample*1                

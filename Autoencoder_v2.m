@@ -236,14 +236,16 @@ classdef Autoencoder_v2 < handle & Learner
             fprintf('diff=%g, norm(dbp-dnum)/norm(dbp)=%g\n', d, norm(Utils.vec(dbp-dnum))/(1e-8+norm(Utils.vec(dbp)))); 
         end                        
         
-        function [hprobs] = fprop(self,X)            
-            %TODO
+        function [hprobs] = fprop(self,X)  
+            self.dbn.setNumData(size(X,2));
+            self.dbn.fprop(X);
+            hprobs = self.dbn.nnet{end}.OUT;
         end
       
             
         function [] = save(self) 
              %should add more items to learner_id in the future
-            learner_id = sprintf('Autoencoder_nu%d_l2%g_sp%g_spl%g',self.nn.numunits, self.nn.l2_C, self.target_sparsity, self.lambda_sparsity);
+            learner_id = sprintf('Autoencoder_l%d_nu%d_l2%g_sp%g_spl%g',length(self.lower_learner)+1,self.nn.numunits, self.nn.l2_C, self.target_sparsity, self.lambda_sparsity);
             savedir = fullfile(Config.basis_dir_path,self.save_dir);                       
             if ~exist(savedir,'dir')               
                 mkdir(savedir);
@@ -254,7 +256,8 @@ classdef Autoencoder_v2 < handle & Learner
             save([savepath '.mat'],'learner');
                         
             figure(1);
-            Visualizer.display_network_l1(self.nn.weights); %TODO: make this be able to display upper layer
+            % Visualizer.display_network_l1(self.nn.weights); %TODO: make this be able to display upper layer
+			Visualizer.displayByComposition(self.nn.weights, self.lower_learner);
             saveas(gcf,[savepath '_1.png']);
             
             %currently only show obj, error & sparsity            

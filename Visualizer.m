@@ -77,6 +77,19 @@ classdef Visualizer
             end                            
         end
         
+       function [weights] = displayByComposition(weights, lower_learner)
+            if exist('lower_learner', 'var') && ~isempty(lower_learner)
+                if ~iscell(lower_learner)
+                    lower_learner = {lower_learner};
+                end
+                for i = 1 : length(lower_learner)   %from high to low                    
+                    weights = lower_learner{i}.nn.weights * weights;
+                end            
+            end
+            
+            Visualizer.display_network_l1(weights);
+        end
+        
          function display_network_l1(A,numcols,numchannels,figstart)
             %display_network -- assume filter is for 2D image
 

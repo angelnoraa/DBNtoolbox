@@ -94,6 +94,7 @@ classdef DataProcessor < handle
                 numfactor = nnz(loading <= numfactor);
                 fprintf('number of pc: %g\n', numfactor);                
             else
+                numfactor = min(numfactor, length(loading));
                 fprintf('percentage of pc: %g\n', loading(numfactor));
             end
             

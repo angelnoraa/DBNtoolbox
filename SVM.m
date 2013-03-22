@@ -76,6 +76,7 @@ classdef SVM < handle & Classifier
         end
         
         function [loss, g] = my_l2svmloss(self, w, X, y, K, C)
+			%this is actually doing 1vsAll with uniform weights!
               [M,N] = size(X); %numdata*dim
               theta = reshape(w, N,K);
               Y = bsxfun(@(y,ypos) 2*(y==ypos)-1, y, 1:K); % numdata*numcase

@@ -108,10 +108,8 @@ classdef DeepBeliefNetwork < handle & Classifier
             
             %---set parameters---            
             size_x = size(X);
-            numsamples = size_x(end);
-            if isempty(self.nnet{1}.in_size) %need initialization
-                self.setPar(size(X),numclass);            
-            end                        
+            numsamples = size_x(end);            
+            self.setPar(size(X),numclass);                          
             %---------------------            
             
             %is it needed? need to think about reset issue afterwards
