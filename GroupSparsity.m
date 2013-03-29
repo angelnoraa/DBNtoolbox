@@ -2,6 +2,7 @@ classdef GroupSparsity < handle & NetworkLayer
     %adding group sparsity (only implement 1D topography)
     %try to complement all data format at the same time, do sparsity on dimension right before "numdata"
     %configurable for passing result up or not
+    %not nsamples-aware parameters
 	properties
 		kernel; %gaussian kernel
         stride; %stride when applying kernel

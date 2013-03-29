@@ -45,7 +45,7 @@ classdef RBM < handle & Learner
         end
         
         function train(self,X) %train with all data
-            self.initialization(X);
+            self.initialization(X,size(X,2));
             for t = 1 : self.max_iter
                 self.initIter(t);
                 self.update(X);          
@@ -87,20 +87,20 @@ classdef RBM < handle & Learner
         end
         
         function [] = update(self, Xb)			
-			poshidprob = (self.weights'*Xb + self.hbias*ones(1,self.numdata))/self.sigma ;  							  
+			poshidprob = self.weights'*Xb/self.sigma + self.hbias*ones(1,self.numdata);  							  
 			poshidprob = Utils.sigmoid(poshidprob);
 			poshidstates = poshidprob > rand(self.numunits,self.numdata);                   
 			
 			switch self.type
 				case 'gau'                          
-					negdata = (repmat(self.vbias,[1, self.numdata])+self.weights*poshidstates)/self.sigma;
+					negdata = repmat(self.vbias,[1, self.numdata])+self.weights*poshidstates*self.sigma;
 				case 'bin'            
 					negdata = Utils.sigmoid((self.weights*poshidstates) + repmat(self.vbias, 1, size(Xb,2)));                            
 				otherwise
 					error('undefined type');
 			end
 			
-			neghidprob = (self.weights'*negdata + self.hbias*ones(1,self.numdata))/self.sigma ;                     			 
+			neghidprob = self.weights'*negdata/self.sigma + self.hbias*ones(1,self.numdata);                     			 
 			neghidprob = Utils.sigmoid(neghidprob);
 			
 			% monitoring variables
@@ -151,7 +151,7 @@ classdef RBM < handle & Learner
 		
         function [acti] = fprop(self, X)          
             X = fprop@Learner(self,X);
-            acti = Utils.sigmoid((self.weights'*X + repmat(self.hbias,[1,size(X,2)])) /self.sigma); 
+            acti = Utils.sigmoid(self.weights'*X/self.sigma + repmat(self.hbias,[1,size(X,2)])); 
         end                
         
         function [FE] = freeEnergy(self, X)

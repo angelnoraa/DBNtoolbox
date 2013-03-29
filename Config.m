@@ -9,4 +9,10 @@ classdef Config < handle
         
         gpu = false;       
     end
+	
+	methods(Static)
+		function [] = addpath()
+			addpath(genpath(Config.lib_dir_path));
+		end
+	end
 end

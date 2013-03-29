@@ -72,13 +72,14 @@ classdef DataProcessor < handle
             
         end
         
-        function [X_zca M P numfactor] = ZCA_whitening(X, numfactor, reg)
-             [~, M ,P ,numfactor, U] = DataProcessor.PCA_whitening(X, numfactor, reg);
-             P = U(:,1:numfactor)*P;
-             X_zca = P*X;
+        function [X_zca, preprocessor, numfactor, U] = ZCA_whitening(X, numfactor, reg)
+             [~, preprocessor ,numfactor, U] = DataProcessor.PCA_whitening(X, numfactor, reg);
+             preprocessor.P = U(:,1:numfactor)*preprocessor.P;
+             X_zca = preprocessor.P*bsxfun(@minus,X,preprocessor.M);
+             preprocessor.E = [];
         end
 		
-		function [X_pca M P numfactor U] = PCA_whitening(X, numfactor, reg)			
+		function [X_pca, preprocessor, numfactor, U] = PCA_whitening(X, numfactor, reg)			
             if ~exist('reg', 'var') reg = 0; end
             
             M = mean(X,2);
@@ -100,6 +101,13 @@ classdef DataProcessor < handle
             
             P = bsxfun(@times,U(:,1:numfactor), 1./sqrt(s(1:numfactor)'+reg))'; %number of pc * feadim            
 			X_pca = P*X;
+            
+            E = U(:,1:numfactor)'./(P ./ U(:, 1:numfactor)');
+            
+            preprocessor.M = M;
+            preprocessor.P = P;
+            preprocessor.E = E;
+            preprocessor.run = @(obj,X)(obj.P*bsxfun(@minus, X, obj.M));
         end
 		
 		function y = rescale(x,a,b)
