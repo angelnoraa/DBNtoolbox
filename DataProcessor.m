@@ -56,7 +56,7 @@ classdef DataProcessor < handle
             Xtrain = bsxfun(@rdivide, bsxfun(@minus, Xtrain, M), S);                     
         end
 	
-        function [Data, M, S] = normalizeData(Data, M, S)
+        function [Data, preprocessor] = normalizeData(Data, M, S)
             if ~exist('M', 'var') || isempty(M)
                 M = mean(Data.Xtrain,2);
                 S = std(Data.Xtrain, [], 2)+1e-5;
@@ -69,7 +69,9 @@ classdef DataProcessor < handle
             if isfield(Data,'Xtest') && ~isempty(Data.Xtest)
                  Data.Xtest = bsxfun(@rdivide, bsxfun(@minus, Data.Xtest, M), S);
             end
-            
+            preprocessor.M = M;
+            preprocessor.S = S;
+            preprocessor.run = @(obj,X)(bsxfun(@rdivide,bsxfun(@minus,X,obj.M),obj.S));
         end
         
         function [X_zca, preprocessor, numfactor, U] = ZCA_whitening(X, numfactor, reg)
@@ -81,7 +83,7 @@ classdef DataProcessor < handle
 		
 		function [X_pca, preprocessor, numfactor, U] = PCA_whitening(X, numfactor, reg)			
             if ~exist('reg', 'var') reg = 0; end
-            
+            %note that in stanford ufldl wiki, they normalize the patch mean!
             M = mean(X,2);
             X = bsxfun(@minus, X, M);   
             
