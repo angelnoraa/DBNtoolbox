@@ -17,13 +17,33 @@ classdef CNN < handle & NetworkLayer
         init_weight = 1e-3;
         
         dweights;
-        dbiases;                                 
+        dbiases;                     
     end
     
     methods
         function self = CNN(numunits, ws)
             self.ws = ws;
             self.numunits = numunits;
+        end
+        
+        function [] = initFromNN(self,nn, numchannels, preprocessor)            
+            self.biases = nn.biases;                                    
+            
+            if exist('preprocessor','var') && ~isempty(preprocessor)
+                if isfield(preprocessor, 'P')
+                    W = preprocessor.P'*nn.weights;
+                else
+                    W = nn.weights;
+                end
+                               
+                if isfield(preprocessor, 'M')
+                    self.biases = self.biases - W'*preprocessor.M;
+                end
+            end
+            
+            self.ws = sqrt(size(W,1)/numchannels);
+            self.numunits = nn.numunits;
+            self.weights = reshape(W, [self.ws, self.ws, numchannels, nn.numunits]);             
         end
         
         function [] = setPar(self,feadim) %feadim = (W, H, numchannels)		
@@ -60,8 +80,7 @@ classdef CNN < handle & NetworkLayer
                 self.OUT(:,:,u,:) = self.OUT(:,:,u,:) + self.biases(u);
             end                        
             
-            self.OUT = Utils.sigmoid(self.OUT);
-            
+            self.OUT = Utils.sigmoid(self.OUT);            
         end
         
         function [f derivative] = bprop(self,f,derivative)                            

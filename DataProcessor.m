@@ -74,6 +74,16 @@ classdef DataProcessor < handle
             preprocessor.run = @(obj,X)(bsxfun(@rdivide,bsxfun(@minus,X,obj.M),obj.S));
         end
         
+        function [Data] = patchWiseNormalize(Data)
+            Data.Xtrain = bsxfun(@minus, Data.Xtrain, mean(Data.Xtrain,1));
+            if isfield(Data,'Xtest')
+                Data.Xtest = bsxfun(@minus, Data.Xtest, mean(Data.Xtest,1));
+            end
+            if isfield(Data, 'Xval')
+                Data.Xval = bsxfun(@minus, Data.Xval, mean(Data.Xval,1));
+            end
+        end
+        
         function [X_zca, preprocessor, numfactor, U] = ZCA_whitening(X, numfactor, reg)
              [~, preprocessor ,numfactor, U] = DataProcessor.PCA_whitening(X, numfactor, reg);
              preprocessor.P = U(:,1:numfactor)*preprocessor.P;
