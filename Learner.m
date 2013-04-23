@@ -21,7 +21,7 @@ classdef Learner < handle
         end
         
         function train(self,X) %train with all data
-            self.initialization(X);
+            self.initialization(X, size(X,2));
             self.initIter(1);
             self.update(X);            
             self.save();

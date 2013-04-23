@@ -4,8 +4,8 @@ classdef Config < handle
         basis_dir_path = 'C:\Users\mysu\code\basis';
         fea_dir_path = '';
         data_dir_path = '\\david\DOAdvanced\Qumulus_workspaces\mysu';
-        tmp_dir_path = '';
-        result_dir_path = '';
+        tmp_dir_path = 'C:\Users\mysu\code\tmp';
+        result_dir_path = 'C:\Users\mysu\code\result';
         
         gpu = false;       
     end

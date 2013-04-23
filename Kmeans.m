@@ -33,7 +33,8 @@ classdef Kmeans < handle & Learner
                 % end
             % end
             self.feadim = size(X,1);                        
-            [~, theta] = Kmeans.kmeanslite(X,self.numunits, self.max_iter);
+%             [~, theta] = Kmeans.kmeanslite(X,self.numunits, self.max_iter);
+            [~, theta] = Kmeans.eCP(X,self.numunits, self.max_iter);
             self.weights = theta;
                 
             % if ~isempty(savedir_s)
@@ -218,8 +219,51 @@ classdef Kmeans < handle & Learner
                 update_idx = acti_num > 0;
                 center(:,update_idx) = X*(E(:,update_idx)*spdiags(1./acti_num(update_idx),0,nnz(update_idx),nnz(update_idx)));    % compute center of each cluster
                 last = label;
-                [val,label] = max(bsxfun(@minus,center'*X,0.5*sum(center.^2,1)')); % assign samples to the nearest centers
-                if (itr >= MAX_ITERS) break; end;
+                [val,label] = max(bsxfun(@minus,center'*X,0.5*sum(center.^2,1)')); % assign samples to the nearest centers                
+                if (itr >= MAX_ITERS) break; end;                
+                hist(label,1:k)
+                %study VQ
+%                 Visualizer.visualizeTSNE(center);
+                pause();
+            end
+            % center=center';
+    
+            if opt_verbose
+                fprintf('\n');
+            end       
+        end
+        function [label,center] = eCP(X, k, MAX_ITERS)
+            if ~exist('opt_verbose', 'var')
+                opt_verbose = true;
+            end
+    
+            if ~exist('MAX_ITERS', 'var')
+                MAX_ITERS = 50;
+            end
+            feadim = size(X,1);
+            n = size(X,2);
+            last = 0;            
+            label = 1;
+            center = X(:,randsample(size(X,2),k));
+                        
+            itr=0;
+            % MAX_ITERS=50;
+            while any(label ~= last)
+                itr = itr+1;
+                if opt_verbose
+                    fprintf( '%d(%d)..', itr, sum(label ~= last));
+                end
+                last = label;                
+                [val,label] = max(bsxfun(@minus,center'*X,0.5*sum(center.^2,1)')); % assign samples to the nearest centers                
+                E = sparse(1:n,label,1,n,k,n);  % transform label into indicator matrix
+                acti_num = sum(E,1)';
+                update_idx = acti_num > 0;
+                center(:,update_idx) = X*(E(:,update_idx)*spdiags(1./acti_num(update_idx),0,nnz(update_idx),nnz(update_idx)));    % compute center of each cluster                
+                if (itr >= MAX_ITERS) break; end;                
+                %study VQ
+%                 hist(label,1:k);
+%                 Visualizer.visualizeTSNE(center);
+%                 pause();
             end
             % center=center';
     

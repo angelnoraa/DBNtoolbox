@@ -155,20 +155,30 @@ classdef Visualizer
          end
         
          %for visualizing waveform
-         function [] = visualize1D(self, savepath, disp_col)
-            if ~exist('savepath','var')
-                savepath = './tmp';
+%          function [] = visualize1D(self, savepath, disp_col)
+%             if ~exist('savepath','var')
+%                 savepath = './tmp';
+%             end
+%             clf;
+%             if ~exist('disp_col','var')            
+%                 disp_col = round(sqrt(self.numunits));
+%             end
+%             disp_row = self.numunits / disp_col;
+%             for i = 1 : self.numunits
+%                 subplot(disp_col,disp_row,i);
+%                 plot(self.weights(:,i));
+%             end
+%             saveas(gcf,[savepath '.png']);
+%          end
+%          
+         function []= visualizeTSNE(X, figid)
+            addpath(fullfile(Config.lib_dir_path,'tSNE'));
+            res = tsne(X);
+            if ~exist('figid','var')
+                figid = 1;
             end
-            clf;
-            if ~exist('disp_col','var')            
-                disp_col = round(sqrt(self.numunits));
-            end
-            disp_row = self.numunits / disp_col;
-            for i = 1 : self.numunits
-                subplot(disp_col,disp_row,i);
-                plot(self.weights(:,i));
-            end
-            saveas(gcf,[savepath '.png']);
-        end
+            figure(figid);
+            plot(res(:,1),res(:,2),'o');
+         end
     end
 end

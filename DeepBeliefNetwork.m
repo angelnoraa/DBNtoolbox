@@ -70,7 +70,6 @@ classdef DeepBeliefNetwork < handle & Classifier
             end
         end        
 
-        
         function [f, derivative] = bprop(self,y)   
             %self.fprop(X);  not include forward anymore
             [f derivative] = self.nnet{self.nlayer}.bprop(0, y);    

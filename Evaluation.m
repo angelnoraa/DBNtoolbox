@@ -24,7 +24,7 @@ classdef Evaluation < handle
                     finish = false;                                                            
                     if exist('par_runned','var')
                         for i = 1 : size(par_runned,1)
-                            if nnz(attempt ~= par_runned(i,:)') == 0
+                            if nnz(abs(attempt - par_runned(i,:)')>1e-5) == 0
                                 tried = true;
                             end
                         end

@@ -183,5 +183,18 @@ classdef Utils
             end
         end
         
+        %----------misc, tmp-------------
+        function [out] = fpropBatch(dbn, data, batchsize)           
+            datasize = size(data);
+            numdata = datasize(end);
+            out = zeros(prod(dbn.nnet{end}.out_size),numdata);
+            for i = 1 : ceil(numdata/batchsize)
+               fprintf('[%d/%d]',i,ceil(numdata/batchsize));
+               batchidx = (i-1)*batchsize+1:min(i*batchsize,numdata);
+               out(:,batchidx) = reshape(dbn.fprop(data(:,:,:,batchidx)),[size(out,1),length(batchidx)]); %classification data
+            end           
         end
+    end
+        
+    
     end

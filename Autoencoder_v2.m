@@ -49,8 +49,7 @@ classdef Autoencoder_v2 < handle & Learner
         
         function [] = initIter(self,t)
             %need to debug this
-             if self.noise ~= 0
-                 error('need debug');
+             if self.noise ~= 0                 
                 self.mask = (Utils.rand([self.nn.in_size, self.nn.numdata]) > self.noise);                         
              end                                      
         end
@@ -218,7 +217,6 @@ classdef Autoencoder_v2 < handle & Learner
 			X = rand(feadim,numdata);
 			ae.setPar(size(X));      
 			
-            
             %self.batch_size = numsamples;
             %self.l2_C_tmp = self.l2_C*numsamples;
             %self.weights = 1e-3*randn(self.feadim,self.numunits);
@@ -227,10 +225,9 @@ classdef Autoencoder_v2 < handle & Learner
             %self.numParam = [numel(self.weights), numel(self.hbias), numel(self.vbias)];                            
             %self.numParam = cumsum(self.numParam);
             x0 = ae.vectorizeParam();
-            
-            %if self.noise ~= 0
-            %    self.mask = (rand(size(X)) > self.noise);
-            %end
+                        
+           ae.noise = 0.2;
+           ae.mask = (rand(size(X)) > ae.noise);           
             
             [d dbp dnum] = Utils.checkgrad2_nodisplay(@(paramvec) ae.fobj(paramvec, X), x0, 1e-5);            
             fprintf('diff=%g, norm(dbp-dnum)/norm(dbp)=%g\n', d, norm(Utils.vec(dbp-dnum))/(1e-8+norm(Utils.vec(dbp)))); 

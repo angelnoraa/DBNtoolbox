@@ -1,4 +1,7 @@
 classdef GroupSparsity < handle & NetworkLayer
+    %WARNING: the functionality of learning topographic features somehow
+    %need demo & testing
+    %-----------------------------------------------------------
     %adding group sparsity (only implement 1D topography)
     %try to complement all data format at the same time, do sparsity on dimension right before "numdata"
     %configurable for passing result up or not
@@ -89,8 +92,8 @@ classdef GroupSparsity < handle & NetworkLayer
 		function [f derivative] = bprop(self,f,derivative)                        
             if self.target_sparsity > 0                
                 curr_sparsity = mean(self.pooled,2);
-                tmp1 = self.target_sparsity./curr_sparsity;
-                tmp2 = (1-self.target_sparsity)./(1-curr_sparsity);
+                tmp1 = self.target_sparsity./(curr_sparsity+1e-5);
+                tmp2 = (1-self.target_sparsity)./(1-curr_sparsity+1e-5);
                 f = f + self.lambda*size(self.pooled,2)*(sum(self.target_sparsity*log(tmp1) + (1-self.target_sparsity)*log(tmp2)));
                 dX = repmat((-tmp1+tmp2),[1 size(self.pooled,2)]);
             else

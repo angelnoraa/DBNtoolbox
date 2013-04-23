@@ -17,7 +17,8 @@ classdef NetworkLayer < handle
 	methods
 		%those layers with parameters
 		function [] = setPar(self,in_size, out_size)		
-            error('need implement this!')
+            self.in_size = in_size;
+            self.out_size = in_size;
 		end
 		
         function [] = reset(self)            
@@ -39,12 +40,13 @@ classdef NetworkLayer < handle
         function setParam(self,paramvec)            
         end
 		
-        function object = gradCheckObject(self)                        
+        function object = gradCheckObject(self)       
+            object = self;
         end  
         
 		%all layers must implement these
 		function [] = fprop(self)
-			error('need implement this!')
+			self.OUT = self.IN;
 		end
         
 		function [f derivative] = bprop(self,f,derivative)
