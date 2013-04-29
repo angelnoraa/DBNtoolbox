@@ -97,11 +97,20 @@ classdef Utils
             C = Utils.zeros([M-m+1,N-n+1,numunits,numdata]);
             
             %optimize this further with different loops? 
-            for u = 1 : numunits
-                for d = 1 : numdata
-                    C(:,:,u,d) = convn(A(:,:,:,d),squeeze(B(end:-1:1,end:-1:1,end:-1:1,u)),'valid');
-                end
-            end
+         global gpu
+	     if gpu == 1
+	       gfor u = 1 : numunits
+                  for d = 1 : numdata
+                      C(:,:,u,d) = convn(A(:,:,:,d),squeeze(B(end:-1:1,end:-1:1,end:-1:1,u)),'valid');
+                  end
+              gend
+	     else
+              for u = 1 : numunits
+                  for d = 1 : numdata
+                      C(:,:,u,d) = convn(A(:,:,:,d),squeeze(B(end:-1:1,end:-1:1,end:-1:1,u)),'valid');
+                  end
+              end
+	     end
 
 %             for c = 1 : numchannels
 %                 for u = 1 : numunits
@@ -152,32 +161,40 @@ classdef Utils
                 
         %----------------for GPU------------------
         function [X] = zeros(dims)
-            if Config.gpu 
-                X = gpuArray(zeros(dims));
+            global gpu
+            if gpu == 1 
+                %X = gpuArray(zeros(dims));
+	            X = gzeros(dims);
             else
                 X = zeros(dims);
             end
         end
         
         function [X] = ones(dims)
-            if Config.gpu 
-                X = gpuArray(ones(dims));
+            global gpu
+            if gpu == 1
+                %X = gpuArray(ones(dims));
+                X = gones(dims);
             else
                 X = ones(dims);
             end
         end
         
         function [X] = rand(dims)
-            if Config.gpu 
-                X = gpuArray(rand(dims));
+            global gpu
+            if gpu == 1
+                %X = gpuArray(rand(dims));
+                X = grand(dims);
             else
                 X = rand(dims);
             end
         end
         
         function [X] = randn(dims)
-            if Config.gpu 
-                X = gpuArray(randn(dims));
+            global gpu
+            if gpu == 1
+                %X = gpuArray(randn(dims));
+                X = grandn(dims);
             else
                 X = randn(dims);
             end
@@ -187,11 +204,14 @@ classdef Utils
         function [out] = fpropBatch(dbn, data, batchsize)           
             datasize = size(data);
             numdata = datasize(end);
-            out = zeros(prod(dbn.nnet{end}.out_size),numdata);
+            out = Utils.zeros([prod(dbn.nnet{end}.out_size),numdata]);
             for i = 1 : ceil(numdata/batchsize)
+               tic
                fprintf('[%d/%d]',i,ceil(numdata/batchsize));
                batchidx = (i-1)*batchsize+1:min(i*batchsize,numdata);
+   	           dbn.setNumData(length(batchidx));
                out(:,batchidx) = reshape(dbn.fprop(data(:,:,:,batchidx)),[size(out,1),length(batchidx)]); %classification data
+               toc   
             end           
         end
     end

@@ -214,7 +214,7 @@ classdef Kmeans < handle & Learner
                     fprintf( '%d(%d)..', itr, sum(label ~= last));
                 end
     
-                E = sparse(1:n,label,1,n,k,n);  % transform label into indicator matrix
+                E = sparse(1:n,label,1,n,k,n);  % transform label into indicator matrix                
                 acti_num = sum(E,1)';
                 update_idx = acti_num > 0;
                 center(:,update_idx) = X*(E(:,update_idx)*spdiags(1./acti_num(update_idx),0,nnz(update_idx),nnz(update_idx)));    % compute center of each cluster
@@ -256,6 +256,10 @@ classdef Kmeans < handle & Learner
                 last = label;                
                 [val,label] = max(bsxfun(@minus,center'*X,0.5*sum(center.^2,1)')); % assign samples to the nearest centers                
                 E = sparse(1:n,label,1,n,k,n);  % transform label into indicator matrix
+                
+%                 recon_error = norm(center*E' - X,'fro');
+%                 fprintf('recon_error %g\n',recon_error);
+                
                 acti_num = sum(E,1)';
                 update_idx = acti_num > 0;
                 center(:,update_idx) = X*(E(:,update_idx)*spdiags(1./acti_num(update_idx),0,nnz(update_idx),nnz(update_idx)));    % compute center of each cluster                

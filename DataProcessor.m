@@ -141,16 +141,17 @@ classdef DataProcessor < handle
 			end
         end
         
-        function patches = random_patches(X, rfSize, numPatches) %anothers version of getdata_imagearray from Adam's kmeans paper
+        function [patches imid]= random_patches(X, rfSize, numPatches) %anothers version of getdata_imagearray from Adam's kmeans paper
             %X = numsamples * feadim
             [M N numchannels numdata]= size(X);
             patches = Utils.zeros([rfSize*rfSize*numchannels,numPatches]);
+            imid = zeros(numPatches,1);
             for i=1:numPatches
               if (mod(i,10000) == 0) fprintf('Extracting patch: %d / %d\n', i, numPatches); end
-
               r = random('unid', M - rfSize + 1);
               c = random('unid', N - rfSize + 1);              
               patch = X(r:r+rfSize-1,c:c+rfSize-1,:,mod(i-1,numdata)+1);              
+              imid(i) = mod(i-1,numdata)+1;
               patches(:,i) = patch(:);
             end            
         end

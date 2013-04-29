@@ -104,7 +104,9 @@ classdef DeepBeliefNetwork < handle & Classifier
 				numclass = size(y,1);
                 y_multi = y;
 			end
-            
+            if Config.gpu
+                y_multi = gsingle(y_multi);
+            end
             %---set parameters---            
             size_x = size(X);
             numsamples = size_x(end);            

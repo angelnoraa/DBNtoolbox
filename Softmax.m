@@ -23,8 +23,8 @@ classdef Softmax < handle & Classifier & NetworkLayer
 			
 			self.feadim = feadim;
 			self.numclass = numclass;
-			self.weights = randn(feadim,numclass);
-			self.bias = zeros(numclass,1);
+			self.weights = Utils.randn([feadim,numclass]);
+			self.bias = Utils.zeros([numclass,1]);
 			
             self.paramNum = numel(self.weights) + numel(self.bias);
 		end
